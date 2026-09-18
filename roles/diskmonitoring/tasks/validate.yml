@@ -1,0 +1,38 @@
+---
+- name: Validate disk usage threshold
+  ansible.builtin.assert:
+    that:
+      - disk_usage_threshold | float >= 0
+      - disk_usage_threshold | float <= 100
+    fail_msg: "disk_usage_threshold must be between 0 and 100."
+ 
+- name: Validate history days
+  ansible.builtin.assert:
+    that:
+      - disk_history_days | int >= 1
+    fail_msg: "disk_history_days must be greater than zero."
+ 
+- name: Validate baseline points
+  ansible.builtin.assert:
+    that:
+      - disk_baseline_points | int >= 1
+    fail_msg: "disk_baseline_points must be greater than zero."
+ 
+- name: Validate sudden jump threshold
+  ansible.builtin.assert:
+    that:
+      - disk_sudden_jump_threshold | float > 0
+    fail_msg: "disk_sudden_jump_threshold must be greater than zero."
+ 
+- name: Validate spike multiplier
+  ansible.builtin.assert:
+    that:
+      - disk_spike_multiplier | float > 0
+    fail_msg: "disk_spike_multiplier must be greater than zero."
+ 
+- name: Validate report directory
+  ansible.builtin.assert:
+    that:
+      - disk_report_dir | length > 0
+    fail_msg: "disk_report_dir cannot be empty."
+ 

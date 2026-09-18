@@ -1,0 +1,14 @@
+---
+- name: Validate configuration
+  ansible.builtin.import_tasks: validate.yml
+ 
+- name: Collect disk utilization
+  ansible.builtin.import_tasks: collect.yml
+ 
+- name: Store disk data
+  ansible.builtin.import_tasks: store.yml
+  run_once: true
+ 
+- name: Analyze disk history
+  ansible.builtin.import_tasks: analyze.yml
+  run_once: true

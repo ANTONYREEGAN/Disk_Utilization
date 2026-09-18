@@ -1,0 +1,39 @@
+$ErrorActionPreference = "Stop"
+ 
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$server = $env:COMPUTERNAME
+ 
+$disks = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3"
+ 
+$result = foreach ($disk in $disks) {
+ 
+    if ($null -eq $disk.Size -or $disk.Size -eq 0) {
+        continue
+    }
+ 
+    $totalGB = [math]::Round(
+        $disk.Size / 1GB,
+        2
+    )
+ 
+    $freeGB = [math]::Round(
+        $disk.FreeSpace / 1GB,
+        2
+    )
+ 
+    $usedPercent = [math]::Round(
+        (($disk.Size - $disk.FreeSpace) / $disk.Size) * 100,
+        2
+    )
+ 
+    [PSCustomObject]@{
+        timestamp    = $timestamp
+        server       = $server
+        drive        = $disk.DeviceID
+        total_gb     = $totalGB
+        free_gb      = $freeGB
+        used_percent = $usedPercent
+    }
+}
+ 
+@($result) | ConvertTo-Json -Compress

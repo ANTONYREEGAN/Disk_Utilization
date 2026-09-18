@@ -1,0 +1,7 @@
+---
+- name: Windows Disk Utilization Monitoring
+  hosts: windows
+  gather_facts: false
+ 
+  roles:
+    - role: diskmonitoring

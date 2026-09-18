@@ -1,0 +1,13 @@
+---
+disk_usage_threshold: 70
+disk_history_days: 30
+disk_baseline_points: 3
+disk_sudden_jump_threshold: 10
+disk_spike_multiplier: 1.5
+ 
+
+disk_report_dir: "/home/ubuntu/disk/reports"
+disk_analysis_output: "{{ disk_report_dir }}/analysis_output.json"
+ 
+disk_retention_days: 30
+disk_fail_on_collection_error: false

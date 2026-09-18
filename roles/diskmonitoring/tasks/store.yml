@@ -1,0 +1,35 @@
+---
+- name: Create disk report directory
+  ansible.builtin.file:
+    path: "{{ disk_report_dir }}/raw"
+    state: directory
+    mode: "0750"
+  delegate_to: localhost
+  run_once: true
+ 
+- name: Generate collection timestamp
+  ansible.builtin.set_fact:
+    disk_report_timestamp: "{{ lookup('pipe', 'date +%Y-%m-%d_%H-%M-%S') }}"
+  delegate_to: localhost
+  run_once: true
+ 
+- name: Build consolidated disk report
+  ansible.builtin.set_fact:
+    disk_report_content: |
+      timestamp,server,drive,total_gb,free_gb,used_percent
+      {% for host in groups['windows'] | default([]) %}
+      {% for disk in hostvars[host].disk_usage_data | default([]) %}
+      {{ disk.timestamp }},{{ disk.server }},{{ disk.drive }},{{ disk.total_gb }},{{ disk.free_gb }},{{ disk.used_percent }}
+      {% endfor %}
+      {% endfor %}
+  delegate_to: localhost
+  run_once: true
+ 
+- name: Write disk usage report
+  ansible.builtin.copy:
+    content: "{{ disk_report_content }}"
+    dest: "{{ disk_report_dir }}/raw/disk_usage_{{ disk_report_timestamp }}.csv"
+    mode: "0640"
+  delegate_to: localhost
+  run_once: true
+ 

@@ -1,0 +1,15 @@
+[
+  {
+    "server": "EC2AMAZ-TA5667H",
+    "drive": "C:",
+    "used_percent": 82.05,
+    "anomaly_detected_30d": false,
+    "anomaly_count": 0,
+    "first_anomaly_date": null,
+    "max_spike": 0.0,
+    "historic_disk_usage": [
+      82.05,
+      82.05
+    ]
+  }
+]

@@ -1,0 +1,32 @@
+---
+- name: Analyze disk utilization history
+  ansible.builtin.command:
+    cmd: >
+      python3
+      {{ role_path }}/files/analyze_disk.py
+      --input-dir {{ disk_report_dir }}/raw
+      --output {{ disk_analysis_output }}
+      --threshold {{ disk_usage_threshold }}
+      --history-days {{ disk_history_days }}
+      --baseline-points {{ disk_baseline_points }}
+      --sudden-jump {{ disk_sudden_jump_threshold }}
+      --spike-multiplier {{ disk_spike_multiplier }}
+  delegate_to: localhost
+  changed_when: true
+ 
+- name: Verify analysis report
+  ansible.builtin.stat:
+    path: "{{ disk_analysis_output }}"
+  delegate_to: localhost
+  register: disk_analysis_file
+ 
+- name: Validate analysis report
+  ansible.builtin.assert:
+    that:
+      - disk_analysis_file.stat.exists
+      - disk_analysis_file.stat.size > 0
+    fail_msg: >-
+      Disk analysis report was not generated:
+      {{ disk_analysis_output }}
+  delegate_to: localhost
+ 

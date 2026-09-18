@@ -1,0 +1,55 @@
+---
+- name: Collect disk utilization from Windows server
+  ansible.windows.win_powershell:
+    script: |
+      $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+ 
+      $result = @(
+          Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" |
+          Where-Object { $_.Size -gt 0 } |
+          ForEach-Object {
+              [PSCustomObject]@{
+                  timestamp    = $timestamp
+                  server       = $env:COMPUTERNAME
+                  drive        = $_.DeviceID
+                  total_gb     = [math]::Round($_.Size / 1GB, 2)
+                  free_gb      = [math]::Round($_.FreeSpace / 1GB, 2)
+                  used_percent = [math]::Round(
+                      (($($_.Size) - $_.FreeSpace) / $_.Size) * 100,
+                      2
+                  )
+              }
+          }
+      )
+ 
+      $result | ConvertTo-Json -Compress
+  register: disk_collection
+  changed_when: false
+ 
+- name: Validate disk collection
+  ansible.builtin.assert:
+    that:
+      - disk_collection.output is defined
+      - disk_collection.output | length > 0
+    fail_msg: "Disk utilization collection failed on {{ inventory_hostname }}"
+ 
+- name: Parse disk collection
+  ansible.builtin.set_fact:
+    disk_usage_parsed: "{{ disk_collection.output | join('') | from_json }}"
+ 
+- name: Normalize disk collection
+  ansible.builtin.set_fact:
+    disk_usage_data: >-
+      {{
+        [disk_usage_parsed]
+        if disk_usage_parsed is mapping
+        else disk_usage_parsed
+      }}
+ 
+- name: Validate normalized disk data
+  ansible.builtin.assert:
+    that:
+      - disk_usage_data is sequence
+      - disk_usage_data | length > 0
+    fail_msg: "No valid disk utilization data available for {{ inventory_hostname }}"
+ 
